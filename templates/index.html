@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>چت‌بات دیتابیسی با LLaMA3</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html, body { height: 100%; margin: 0; }
+    body {
+      background-image: url('bg.jpg'); 
+      background-size: cover; 
+      background-repeat: no-repeat; 
+      background-position: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: sans-serif;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      background-color: white;
+      border-radius: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      padding: 10px;
+      width: 500px;
+      height: 600px;
+    }
+    #chat {
+      flex: 1;
+      overflow-y: auto;
+      background-color: #f9fafb;
+      border: 1px solid #ddd;
+      border-radius: 15px;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    input#msg {
+      flex: 1;
+      padding: 10px;
+      border-radius: 15px;
+      border: 1px solid #ccc;
+      outline: none;
+    }
+    select#tableSelect {
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      padding: 5px 10px;
+      margin-bottom: 5px;
+    }
+    button#sendBtn {
+      padding: 10px 15px;
+      margin-left: 5px;
+      border-radius: 15px;
+      background-color: #3b82f6;
+      color: white;
+      border: none;
+    }
+    @media (max-width: 480px) {
+      .container { height: 100vh; padding: 8px; border-radius: 0; }
+      #chat { padding: 8px; margin-bottom: 8px; }
+      input#msg, button#sendBtn { padding: 8px; font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container" style="width: 400px;">
+    <h2 class="text-center font-bold text-gray-800 mb-2 text-lg">چت‌بات دیتابیسی با LLaMA3</h2>
+
+    <!-- انتخاب جدول -->
+    <select id="tableSelect">
+      <option value="persons">persons</option>
+      <!-- می‌تونی جدول‌های دیگر رو اضافه کنی -->
+    </select>
+
+    <div id="chat"></div>
+
+    <div class="flex gap-1">
+      <input id="msg" type="text" placeholder="پیام..." />
+      <button id="sendBtn">ارسال</button>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "http://127.0.0.1:5000/api/chat";
+
+    $(document).ready(function(){
+      function sendMessage(){
+        let message = $("#msg").val();
+        let table = $("#tableSelect").val();
+        if (message.trim() === "") return;
+
+        $("#chat").append("<p class='text-blue-600 mb-1'><b>شما:</b> " + message + "</p>");
+        $("#msg").val("");
+        $("#chat").scrollTop($("#chat")[0].scrollHeight);
+
+        $.ajax({
+          url: API_URL,
+          method: "POST",
+          contentType: "application/json",
+          data: JSON.stringify({message: message, table: table}),
+          success: function(response){
+            $("#chat").append("<p class='text-green-600 mb-1'><b>بات:</b> " + response.reply + "</p>");
+            $("#chat").scrollTop($("#chat")[0].scrollHeight);
+          },
+          error: function(){
+            $("#chat").append("<p class='text-red-500 mb-1'><b>بات:</b> خطا در ارتباط با سرور</p>");
+            $("#chat").scrollTop($("#chat")[0].scrollHeight);
+          }
+        });
+      }
+
+      $("#sendBtn").click(sendMessage);
+      $("#msg").keyup(function(e){
+        if(e.keyCode === 13) sendMessage();
+      });
+    });
+  </script>
+
+</body>
+</html>
